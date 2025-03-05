@@ -1,0 +1,134 @@
+class EmpleadoConstruccion:
+    def __init__(self, nombre, apellido, cedula, horas_trabajadas, especialidad):
+        self.nombre = nombre
+        self.apellido = apellido
+        self.cedula = cedula
+        self.horas_trabajadas = horas_trabajadas
+        self.especialidad = especialidad
+        self.tarifa_por_hora = self.establecer_tarifa()
+        self.monto_facturado = self.calcular_monto_facturado()
+
+    def establecer_tarifa(self):
+        """Establece la tarifa por hora según la especialidad."""
+        if isinstance(self, Ingeniero):
+            return 25
+        elif isinstance(self, Arquitecto):
+            return 10
+        elif isinstance(self, Obrero):
+            return 5
+        return 0  
+
+    def calcular_monto_facturado(self):
+        """Calcula el monto total a facturar, incluyendo recargos."""
+        monto_base = self.horas_trabajadas * self.tarifa_por_hora
+        monto_con_recargos = monto_base
+
+        if self.es_numero_primo(self.horas_trabajadas):
+            monto_con_recargos *= 1.05 
+
+        if self.es_numero_deficiente(monto_base):
+            monto_con_recargos *= 1.10 
+
+        return monto_con_recargos
+
+    def es_numero_primo(self, numero):
+        """Verifica si un número es primo."""
+        if numero <= 1:
+            return False
+        for i in range(2, int(numero**0.5) + 1): 
+            if numero % i == 0:
+                return False
+        return True
+
+    def es_numero_deficiente(self, numero):
+        """Verifica si un número es deficiente."""
+        if numero <= 0:
+            return False
+        suma_divisores = 0
+        for i in range(1, numero // 2 + 1): 
+            if numero % i == 0:
+                suma_divisores += i
+        return suma_divisores < numero
+
+    def obtener_datos_personales(self):
+        """Retorna los datos personales del empleado."""
+        return f"Nombre: {self.nombre} {self.apellido}, Cédula: {self.cedula}"
+
+    def obtener_datos_empleo(self):
+        """Retorna los datos de empleo del empleado."""
+        return f"Especialidad: {self.especialidad}, Horas Trabajadas: {self.horas_trabajadas}, Monto Facturado: ${self.monto_facturado:.2f}"
+
+class Ingeniero(EmpleadoConstruccion):
+    def __init__(self, nombre, apellido, cedula, horas_trabajadas, especialidad):
+        super().__init__(nombre, apellido, cedula, horas_trabajadas, f"Ingeniero ({especialidad})")
+        self.tipo_empleado = "Ingeniero"
+
+class Arquitecto(EmpleadoConstruccion):
+    def __init__(self, nombre, apellido, cedula, horas_trabajadas, especialidad):
+        super().__init__(nombre, apellido, cedula, horas_trabajadas, f"Arquitecto ({especialidad})")
+        self.tipo_empleado = "Arquitecto"
+
+class Obrero(EmpleadoConstruccion):
+    def __init__(self, nombre, apellido, cedula, horas_trabajadas, especialidad):
+        super().__init__(nombre, apellido, cedula, horas_trabajadas, f"Obrero ({especialidad})")
+        self.tipo_empleado = "Obrero"
+
+class RegistroHorasConstruccion:
+    def __init__(self):
+        self.empleados = []
+
+    def agregar_empleado(self, empleado):
+        """Agrega un empleado al registro."""
+        self.empleados.append(empleado)
+
+    def generar_reporte_diario(self):
+        """Genera el reporte diario con estadísticas."""
+        monto_total_pagado = 0
+        cantidad_empleados_por_tipo = {"Ingeniero": 0, "Arquitecto": 0, "Obrero": 0}
+        total_pagado_por_tipo = {"Ingeniero": 0, "Arquitecto": 0, "Obrero": 0}
+        empleado_mayor_pago_por_tipo = {
+            "Ingeniero": {"empleado": None, "monto": 0},
+            "Arquitecto": {"empleado": None, "monto": 0},
+            "Obrero": {"empleado": None, "monto": 0},
+        }
+
+        print("======= REPORTE DIARIO DE HORAS DE CONSTRUCCIÓN ========")
+
+        for empleado in self.empleados:
+            monto_total_pagado += empleado.monto_facturado
+            tipo_empleado = empleado.tipo_empleado
+            cantidad_empleados_por_tipo[tipo_empleado] += 1
+            total_pagado_por_tipo[tipo_empleado] += empleado.monto_facturado
+
+            
+            if empleado.monto_facturado > empleado_mayor_pago_por_tipo[tipo_empleado]["monto"]:
+                empleado_mayor_pago_por_tipo[tipo_empleado]["empleado"] = empleado
+                empleado_mayor_pago_por_tipo[tipo_empleado]["monto"] = empleado.monto_facturado
+
+            print("\n--- Datos del Empleado ---")
+            print(empleado.obtener_datos_personales())
+            print(empleado.obtener_datos_empleo())
+
+        print("\n======= Estadísticas del Día ========")
+        print(f"Monto Total Pagado a Empleados: ${monto_total_pagado:.2f}")
+        print("\nCantidad de Empleados por Tipo:")
+        for tipo, cantidad in cantidad_empleados_por_tipo.items():
+            print(f"- {tipo}: {cantidad}")
+
+        print("\nPromedio de Pago por Tipo de Empleado:")
+        for tipo in cantidad_empleados_por_tipo:
+            cantidad = cantidad_empleados_por_tipo[tipo]
+            total_tipo = total_pagado_por_tipo[tipo]
+            promedio = total_tipo / cantidad if cantidad > 0 else 0
+            print(f"- {tipo}: ${promedio:.2f}")
+
+        print("\nEmpleado con Mayor Pago por Tipo:")
+        for tipo, datos in empleado_mayor_pago_por_tipo.items():
+            empleado = datos["empleado"]
+            monto = datos["monto"]
+            if empleado:
+                print(f"- {tipo}: {empleado.nombre} {empleado.apellido} - Monto: ${monto:.2f}")
+            else:
+                print(f"- {tipo}: No hay empleados de este tipo.")
+
+        print("\n================================================")
